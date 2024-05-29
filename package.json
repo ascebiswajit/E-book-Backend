@@ -1,0 +1,23 @@
+{
+  "name": "bookapp",
+  "version": "1.0.0",
+  "description": "This is a ebook api Project using TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rest",
+    "api",
+    "express",
+    "Authentication"
+  ],
+  "author": "B.Nayak",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.13",
+    "nodemon": "^3.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
