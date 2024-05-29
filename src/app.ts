@@ -1,6 +1,7 @@
 import express from "express";
 
 import globalErrorHandler from "./middlewares/globalErrorHandler";
+import userRouter from "./users/userRouter";
 const app = express();
 
 //Routes
@@ -13,7 +14,8 @@ app.get("/", (req, res, next) => {
     res.json({ message: "THe app is running" });
 });
 
+app.use("/api/users/", userRouter);
 //global error handler
-app.use(globalErrorHandler)
+app.use(globalErrorHandler);
 
 export default app;
