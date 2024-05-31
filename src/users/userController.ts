@@ -57,35 +57,52 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const loginUser = async (req: Request, res: Response, next: NextFunction) => {
-    
-    const {email,password}=req.body;
-    if(!email&& !password){
-        return next (createHttpError(400,"Make sure fill up the email and password"))
+  const { email, password } = req.body;
+  if (!email && !password) {
+    return next(
+      createHttpError(400, "Make sure fill up the email and password")
+    );
+  } else if (!email) {
+    return next(createHttpError(400, "Make sure fill the email field"));
+  } else if (!password) {
+    return next(createHttpError(400, "Make sure fill the password field"));
+  }
+  // check that email exits or not
+  let finduser;
+  try {
+    finduser = await userModel.findOne({ email: email });
+    if (!finduser) {
+      return next(createHttpError(400, "Invalid User"));
     }
-    else if(!email){
-        return next (createHttpError(400,"Make sure fill the email field"))
-        
-    }else if(!password)
-    {
-        return next (createHttpError(400,"Make sure fill the password field"))
-        
-    }
-    const user = await userModel.findOne({ email: email });
-    if(!user){
-        return next (createHttpError(400,"Invalid User"))
+  } catch (error) {
+    return next(createHttpError(500, "Error while User is present"));
+  }
+  try {
+    const isMatch = await bcrypt.compare(password, finduser.password);
 
+    if (!isMatch) {
+      return next(createHttpError(400, "Invalid User and password"));
     }
-    const isMatch = await bcrypt.compare(password,user.password);
+  } catch (error) {
+    return next(createHttpError(500, "Error while password doesnot match"));
+  }
+  try {
+    //Token generation
 
-    if(!isMatch){
-        return next (createHttpError(400,"Invalid User and password"))
-
-    }
-        //Token generation
-        const token = sign({ sub: user._id }, config.jwtSecret as string, {
-            expiresIn: "7d",
-          });
-    res.json({accessToken:token})
+    const token = sign({ sub: finduser._id }, config.jwtSecret as string, {
+      expiresIn: "7d",
+    });
+    res.json({ accessToken: token, message: "the user login sucessfully" });
+  } catch (error) {
+    return next(createHttpError(500, "Does not getting json web token"));
+  }
 };
+const getAllUsers = async (req:Request,res:Response,next:NextFunction)=>{
+  // res.json({message:"get All User data"})
 
-export { createUser ,loginUser};
+  const AllUsers = await userModel.find();
+  res.json({data:AllUsers})
+
+}
+
+export { createUser, loginUser ,getAllUsers};
