@@ -1,5 +1,5 @@
 import express from "express";
-import { createBook } from "./bookController";
+import { createBook,updateBook } from "./bookController";
 import multer from "multer";
 import path from "node:path";
 import authenticate from "../middlewares/authenticate";
@@ -17,11 +17,17 @@ limits:{fileSize:2e7}//20mb:20*1024*1024
 
 //routes
 // /api/books
+//create section 
 bookRouter.post("/create",authenticate,upload.fields([
     {name:'coverImage',maxCount:1},
     {name:'file',maxCount:1}
 
 ]),createBook);
+//update section
+bookRouter.patch("/:bookId/edit",authenticate,upload.fields([
+    {name:'coverImage',maxCount:1},
+    {name:'file',maxCount:1}
 
+]),updateBook);
 
 export default bookRouter;
