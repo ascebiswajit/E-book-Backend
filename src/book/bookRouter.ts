@@ -9,7 +9,8 @@ const bookRouter = express.Router();
 // file Store Local
 const upload = multer ({
 dest:path.resolve(__dirname,"../../public/data/uploads"),
-limits:{fileSize:3e7}//30mb:30*1024*1024
+//must remember cloudinary only take 10 mb for upload in free version
+limits:{fileSize:2e7}//20mb:20*1024*1024
 })
 
 
