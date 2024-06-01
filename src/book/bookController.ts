@@ -3,9 +3,8 @@ import cloudinary from "../config/cloudinary";
 import path from "node:path";
 import createHttpError from "http-errors";
 import bookModel from "./bookModel";
-import fs from 'node:fs';
+import fs from "node:fs";
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
-  console.log("files", req.files);
   const { title, genre } = req.body;
   //define the type of req.files
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -25,7 +24,6 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       folder: "bookCover",
       format: coverImageMimeType,
     });
-    console.log(uploadResult, "uploadResult");
 
     const bookFileName = files.file[0].filename;
 
@@ -45,10 +43,11 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
         format: "pdf",
       }
     );
-    console.log(bookFileUploadResult, "uploadPdfResult");
 
     // create book
-
+    // @ts-ignore
+      console.log("userId",req.userId)
+      
     const newBook = await bookModel.create({
       title,
       genre,
@@ -56,20 +55,20 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       coverImage: uploadResult.secure_url,
       file: bookFileUploadResult.secure_url,
     });
-    
-try {
-        // Delete temp file from local
-        await fs.promises.unlink(filePath)
-        await fs.promises.unlink(bookFilePath)
-} catch (error) {
-    return next(
+
+    try {
+      // Delete temp file from local
+      await fs.promises.unlink(filePath);
+      await fs.promises.unlink(bookFilePath);
+    } catch (error) {
+      return next(
         createHttpError(500, "there having a problem in   delete local file")
       );
-}
+    }
 
-
-
-    res.status(201).json({id:newBook._id,message:'The bokk is created sucessfully'});
+    res
+      .status(201)
+      .json({ id: newBook._id, message: "The bokk is created sucessfully" });
   } catch (error) {
     return next(
       createHttpError(500, "there having a problem in   upload  cloudinary")
