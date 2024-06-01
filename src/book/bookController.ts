@@ -117,7 +117,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     completeCoverImage = uploadResult.secure_url;
     await fs.promises.unlink(filePath);
   }
-  let completeFileName ='';
+  let completeFileName = "";
   if (files.file) {
     const bookFileName = files.file[0].filename;
 
@@ -126,7 +126,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       "../../public/data/uploads",
       bookFileName
     );
-    completeFileName =bookFileName
+    completeFileName = bookFileName;
     // for upload pdf
     const bookFileUploadResult = await cloudinary.uploader.upload(
       bookFilePath,
@@ -141,23 +141,30 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     await fs.promises.unlink(bookFilePath);
   }
 
+  const updatedBook = await bookModel.findOneAndUpdate(
+    {
+      _id: bookId,
+    },
+    {
+      title: title,
+      genre: genre,
+      coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
+      file: completeFileName ? completeFileName : book.file,
+    },
+    { new: true }
+  );
 
-    const updatedBook = await bookModel.findOneAndUpdate(
-      {
-        _id:bookId
-      },
-      {
-      title:title,
-      genre:genre,
-      coverImage: completeCoverImage ? completeCoverImage:book.coverImage,
-      file: completeFileName?completeFileName:book.file,
-    },{new:true}
-    );
-
-
-
-
-  res.json({ updatedBook,message: "THe book data updated" });
+  res.json({ updatedBook, message: "THe book data updated" });
 };
 
-export { createBook, updateBook };
+const getAllBook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const book = await bookModel.find();
+  res.json({bookData: book})
+
+  } catch (error) {
+    return next(createHttpError(500,"Error while getting Data"))
+  }
+};
+
+export { createBook, updateBook, getAllBook };
