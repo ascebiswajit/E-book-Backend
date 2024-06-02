@@ -5,6 +5,7 @@ import createHttpError from "http-errors";
 import bookModel from "./bookModel";
 import fs from "node:fs";
 import { AuthRequest } from "../middlewares/authenticate";
+import { error } from "node:console";
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
   const { title, genre } = req.body;
   //define the type of req.files
@@ -182,4 +183,40 @@ const getSingleBook = async (
     return next(createHttpError(500, "Error while getting Data"));
   }
 };
-export { createBook, updateBook, getAllBook, getSingleBook };
+
+
+// delete Book
+const deleteBook = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const bookId = req.params.bookId;
+  try {
+    const book = await bookModel.findOne({ _id: bookId });
+
+
+    // check access
+    const _req = req as AuthRequest
+    if(book?.author.toString() !== _req.userId){
+      return next(createHttpError(403,"you don't have access"))
+    }
+    const coverFileSplits = book.coverImage.split("/");
+    const coverImagePublicId = coverFileSplits.at(-2)+'/'+coverFileSplits.at(-1)?.split('.').at(0)
+    const BookFileSplits = book.file.split("/");
+    const BookFilePublicId = BookFileSplits.at(-2)+'/'+BookFileSplits.at(-1)
+    console.log(coverImagePublicId,BookFilePublicId)
+
+    
+    await cloudinary.uploader.destroy(coverImagePublicId)
+    await cloudinary.uploader.destroy(BookFilePublicId,{
+      resource_type:"raw"
+    })
+    await bookModel.deleteOne({_id:bookId})
+    return res.sendStatus(204);
+  } catch (error) {
+    return next(createHttpError(500,"Error while delete book"))
+  }
+
+  }
+export { createBook, updateBook, getAllBook, getSingleBook ,deleteBook};
