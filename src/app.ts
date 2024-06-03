@@ -3,8 +3,14 @@ import express from "express";
 import globalErrorHandler from "./middlewares/globalErrorHandler";
 import userRouter from "./users/userRouter";
 import bookRouter from "./book/bookRouter";
+
+import cors from 'cors';
 const app = express();
 app.use(express.json())
+
+// enable cors origin
+app.use(cors())
+
 //Routes
 //HTTPS Methods GET,POST,PUT,PATCH,DELETE
 
