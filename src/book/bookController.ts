@@ -160,6 +160,8 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getAllBook = async (req: Request, res: Response, next: NextFunction) => {
+  //add sleep on data fetching
+  // const  sleep = await new Promise((resolve)=>setTimeout(resolve,5000))
   try {
     const book = await bookModel.find().populate("author","name");
     res.json(book);
