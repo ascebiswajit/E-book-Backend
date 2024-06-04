@@ -5,9 +5,8 @@ import createHttpError from "http-errors";
 import bookModel from "./bookModel";
 import fs from "node:fs";
 import { AuthRequest } from "../middlewares/authenticate";
-import { error } from "node:console";
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, genre } = req.body;
+  const { title, genre,description } = req.body;
   //define the type of req.files
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
@@ -54,6 +53,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     const newBook = await bookModel.create({
       title,
       genre,
+      description,
       author: _req.userId,
       coverImage: uploadResult.secure_url,
       file: bookFileUploadResult.secure_url,
@@ -79,7 +79,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 const updateBook = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, genre } = req.body;
+  const { title, genre,description } = req.body;
 
   const bookId = req.params.bookId;
 
@@ -149,6 +149,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     {
       title: title,
       genre: genre,
+      description:description,
       coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
       file: completeFileName ? completeFileName : book.file,
     },
@@ -160,8 +161,8 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 
 const getAllBook = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const book = await bookModel.find();
-    res.json({ bookData: book });
+    const book = await bookModel.find().populate("author","name");
+    res.json(book);
   } catch (error) {
     return next(createHttpError(500, "Error while getting Data"));
   }
@@ -174,11 +175,11 @@ const getSingleBook = async (
 ) => {
   const bookId = req.params.bookId;
   try {
-    const book = await bookModel.findOne({ _id: bookId });
+    const book = await bookModel.findOne({ _id: bookId }).populate("author","name email");
     if (!book) {
       return next(createHttpError(404, "Book is not Found"));
     }
-    res.json({ bookData: book });
+    res.json(book);
   } catch (error) {
     return next(createHttpError(500, "Error while getting Data"));
   }
